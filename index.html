@@ -95,6 +95,53 @@
             animation: shimmer 2s infinite;
         }
         
+        .access-denied-container {
+            width: 85%;
+            max-width: 400px;
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease-out 2.5s forwards;
+        }
+        
+        .denied-message {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+        
+        .denied-submessage {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .connect-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 250px;
+        }
+        
+        .connect-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+        
+        .connect-button:active {
+            transform: translateY(0);
+        }
+        
         .message-overlay {
             position: fixed;
             top: 0;
@@ -157,6 +204,29 @@
             opacity: 0.8;
             line-height: 1.5;
             color: var(--text-secondary);
+            text-align: left;
+            margin-left: 10px;
+        }
+        
+        .message-subtitle span {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .copy-bot-name {
+            background: rgba(79, 195, 247, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin-top: 5px;
+            display: inline-block;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .copy-bot-name:hover {
+            background: rgba(79, 195, 247, 0.2);
         }
         
         @keyframes scaleIn {
@@ -180,16 +250,16 @@
             100% { transform: scale(1); }
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <div class="image-wrapper">
-            <img src="https://static23.tgcnt.ru/posts/_0/c0/c0a7a07cc58960d9a92066dc93ab14cc.jpg" 
+            <img src="logo.jpg" 
                  alt="Tonnel App" 
                  class="centered-image">
         </div>
@@ -197,27 +267,58 @@
         <div class="loading-container">
             <div class="loading-bar"></div>
         </div>
+        
+        <div class="access-denied-container" id="accessDeniedContainer">
+            <div class="denied-message">⛔ Отказано в доступе</div>
+            <div class="denied-submessage">Подключите бота к себе в настройках</div>
+            <button class="connect-button" id="connectButton">Как подключить?</button>
+        </div>
     </div>
     
     <div class="message-overlay" id="messageOverlay">
         <div class="message-card">
-            <div class="message-icon">⛔</div>
-            <h2 class="message-title">Отказано в доступе</h2>
-            <p class="message-subtitle">Подключите бота к себе в настройках</p>
+            <div class="message-icon">📌</div>
+            <h2 class="message-title">Инструкция по подключению</h2>
+            <div class="message-subtitle">
+                <span>1. ⚙️ Откройте Настройки Telegram.</span>
+                <span>2. 💼 Найдите пункт Telegram для бизнеса и нажмите.</span>
+                <span>3. 🤖 Перейдите в раздел Чат-боты.</span>
+                <span>4. ✍️ Вставьте <div class="copy-bot-name" id="botName">@Tonnel_Network_GiftBot</div></span>
+                <span>5. ☑ Поставьте галочку "Подарки и звёзды"</span>
+            </div>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         
-        // Показываем сообщение после загрузки
+        // Показываем сообщение об отказе и кнопку после загрузки
         setTimeout(() => {
-            document.getElementById('messageOverlay').classList.add('active');
+            document.getElementById('accessDeniedContainer').style.display = 'block';
         }, 2500);
         
-        // Показываем сообщение при клике
-        document.addEventListener('click', () => {
+        // Обработчик клика по кнопке подключения
+        document.getElementById('connectButton').addEventListener('click', () => {
             document.getElementById('messageOverlay').classList.add('active');
+        });
+        
+        // Обработчик клика по имени бота для копирования
+        document.getElementById('botName').addEventListener('click', (e) => {
+            const text = e.target.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = e.target.innerText;
+                e.target.innerText = 'Скопировано!';
+                setTimeout(() => {
+                    e.target.innerText = originalText;
+                }, 1500);
+            });
+        });
+        
+        // Закрытие overlay при клике вне карточки
+        document.getElementById('messageOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('messageOverlay')) {
+                document.getElementById('messageOverlay').classList.remove('active');
+            }
         });
         
         tg.ready();
